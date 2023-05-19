@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    background: lightgray;
+}
+
+canvas {
+    display: block;
+    margin: auto;
+    width: calc(70%);
+    margin-top: 2%;
+    background: lightblue;  
+}
