@@ -24,6 +24,7 @@ var player,
     coins,
     pinchos,
     proyectil,
+    cannon,
     cursors,
     acceleration = 1000,
     jumpVelocity = -550,
@@ -43,6 +44,7 @@ function preload() {
     this.load.image("enemigo", "baddie.jpg");
     this.load.image("pinchos", "spikes.png");
     this.load.image("proyectil", "proyectil.jpg");
+    this.load.spritesheet('cannon', 'canon.png', { frameWidth: 32, frameHeight: 32 });
 }
 
 
@@ -61,7 +63,6 @@ function create() {
     collapsingPlatforms = this.physics.add.staticGroup();
     coins = this.physics.add.staticGroup();
     pinchos = this.physics.add.staticGroup();
-
 
     // Columnas de derecha e izquierda
     var leftColumn = this.add.rectangle(25, config.height / 2, 100, config.height + 10000, 0xff0000);
@@ -102,12 +103,14 @@ function create() {
     crearSaltador.call(this, -100, 490);
     crearSaltador.call(this, 100, 580);
 
-    
+
     crearPinchos.call(this, 320, 640);
     crearPinchos.call(this, 820, 640);
 
-    crearProyectil.call(this, config.width / 2 - 600, 200, 1300);
-
+    
+    
+    crearCannon.call(this, 35, 600);
+    crearCannon.call(this, 35, 500);
 
     // Position the player on the lowest platform
     // player.x = lowestPlatform.x;
@@ -187,9 +190,9 @@ function createMovingPlatform(x, y, displayWidth, distance) {
     this.physics.add.collider(player, movingPlatform);
 }
 
-function crearPinchos(x,y){
+function crearPinchos(x, y) {
     var pinchitos = this.physics.add.sprite(x, y, "pinchos");
-    pinchitos.enableBody = true; 
+    pinchitos.enableBody = true;
     pinchitos.body.allowGravity = false;
     pinchitos.body.immovable = true;
     this.physics.add.collider(pinchitos, platforms);
@@ -197,18 +200,29 @@ function crearPinchos(x,y){
 
 }
 
-function crearProyectil(x, y, distance) {
-    var proyectil = this.physics.add.sprite(x, y, "proyectil");
+function crearCannon(x, y) {
+    var cannon = this.add.sprite(x, y, 'cannon').setScale(2.2).setDepth(1);
+    this.anims.create({
+        key: 'cannonFire',
+        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
+        frameRate: 1,
+        repeat: -1
+    });
+    cannon.anims.play('cannonFire');
+
+    //proyectil
+    var proyectil = this.physics.add.sprite(x, y+10, "proyectil");
     proyectil.setImmovable(true);
     proyectil.body.allowGravity = false;
     proyectil.refreshBody();
 
     this.tweens.add({
         targets: proyectil,
-        x: proyectil.x + distance,
+        x: proyectil.x + 1300,
         ease: "Linear",
-        duration: 4000,
+        duration: 5000,
         repeat: -1,
+        delay: 2000,
     });
 
     this.physics.add.collider(player, proyectil, chocarPinchos, null, this);
