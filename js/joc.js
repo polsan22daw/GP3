@@ -25,6 +25,11 @@ var player,
     pinchos,
     proyectil,
     cannon,
+    lava,
+    lava2,
+    lavaTimer,
+    lavaSpeed = 1,
+    iniciarLava = false,
     cursors,
     acceleration = 1000,
     jumpVelocity = -550,
@@ -41,13 +46,16 @@ function preload() {
     this.load.image("fallPlat", "oneway-platform.png");
     this.load.image("coin", "coin.png");
     this.load.image("movimientoPlat", "one-way-platform.jpg");
-    this.load.image("enemigo", "baddie.jpg");
+    this.load.image("enemigo", "fire.gif");
     this.load.image("pinchos", "spikes.png");
     this.load.image("proyectil", "proyectil.jpg");
+    this.load.image("ground2", "one-way-platform.jpg");
     this.load.spritesheet('cannon', 'canon.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('lava', 'lava.png', { frameWidth: 288, frameHeight: 32, endFrame: 9});
 }
 
 
+let isPlayerMoving = false;
 
 
 function create() {
@@ -58,8 +66,11 @@ function create() {
     logo.setScale(0.5);
 
     createPlayer.call(this);
+    createLava.call(this);
+    
 
     platforms = this.physics.add.staticGroup();
+    platform2 = this.physics.add.staticGroup();
     collapsingPlatforms = this.physics.add.staticGroup();
     coins = this.physics.add.staticGroup();
     pinchos = this.physics.add.staticGroup();
@@ -70,17 +81,22 @@ function create() {
     this.physics.add.existing(leftColumn, true);
     this.physics.add.existing(rightColumn, true);
     //hacer la primera plataforma que ocupe el 100% de la pantalla y que sea la que esté más abajo
-    platforms.create(config.width / 2, config.height, "ground").setScale(3).refreshBody();
+    // platforms.create(config.width / 2, config.height, "ground").setScale(3).refreshBody();
+    platform2.create(config.width / 2, 670, "ground2").setScale(3).refreshBody();
+    platform2.create(config.width / 2, 590, "ground2").setScale(2).refreshBody();
+
+
     //crear una plataforma en el centro de la pantalla
-    platforms.create(config.width / 2, 520, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 - 320, 400, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 + 320, 400, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 - 120, 280, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 + 120, 160, "ground").setScale(0.5).refreshBody();
-    collapsingPlatforms.create(config.width / 2 - 150, 40, "fallPlat").setScale(0.5).refreshBody();
-    collapsingPlatforms.create(config.width / 2 + 380, 40, "fallPlat").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 + 120, -80, "ground").setScale(0.5).refreshBody();
-    createMovingPlatform.call(this, config.width / 2 - 100, -200, 150, -300);
+    platforms.create(config.width / 2, 420, "ground").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2 - 320, 300, "ground").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2 + 320, 300, "ground").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2 - 120, 180, "ground").setScale(0.5).refreshBody();
+    crearEnemigo.call(this, 350, 156,170);
+    platforms.create(config.width / 2 + 120, 60, "ground").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(config.width / 2 - 150, -40, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(config.width / 2 + 380, -40, "fallPlat").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2 + 120, -180, "ground").setScale(0.5).refreshBody();
+    createMovingPlatform.call(this, config.width / 2 - 100, -300, 150, -300);
 
     //barredora
     platforms.create(config.width / 2 - 400, -320, "ground").setScale(0.5).refreshBody();
@@ -100,52 +116,37 @@ function create() {
         yoyo: true
     });
 
-    crearSaltador.call(this, -100, 490);
-    crearSaltador.call(this, 100, 580);
+    crearSaltador.call(this, -100, 456);
+    crearSaltador.call(this, 100, 566);
 
 
-    crearPinchos.call(this, 320, 640);
-    crearPinchos.call(this, 820, 640);
+    crearPinchos.call(this, 320, 606);
+    crearPinchos.call(this, 820, 606);
 
-    
-    
-    crearCannon.call(this, 35, 600);
-    crearCannon.call(this, 35, 500);
+    crearCannon.call(this, 35, 566);
+    crearCannon.call(this, 35, 466);
 
     // Position the player on the lowest platform
     // player.x = lowestPlatform.x;
     // player.y = lowestPlatform.y - 80;
     player.x = 700;
-    player.y = 600;
+    player.y = 540;
 
     heightText = this.add.text(16, 50, "Height: 0", {
         fontSize: "24px",
         fill: "#fff"
     });
 
-    //enemigos
-    enemigo = this.physics.add.sprite(650, 650, "enemigo");
-    enemigo.setCollideWorldBounds(true);
-    //que spawnee en -400, -280
-    enemigo.x = config.width / 2 - 400;
-    enemigo.y = -280;
-
 
     this.physics.add.collider(player, platforms);
+    this.physics.add.collider(player, platform2);
     this.physics.add.collider(player, collapsingPlatforms, shakePlatform, checkOneWay, this);
-
-    //enemigos
-    this.physics.add.collider(enemigo, platforms);
-
 
     // this.physics.add.overlap(player, coins, collectCoin, null, this);
     this.physics.add.collider(player, leftColumn);
     this.physics.add.collider(player, rightColumn);
     this.physics.add.overlap(player, null, this);
 
-
-    //enemigos
-    this.physics.add.collider(player, enemigo, chocarEnemigo, null, this);
     // this.physics.add.collider(player, pinchos, chocarPinchos, null, this);
 
     // Find the lowest platform
@@ -169,7 +170,11 @@ function crearSaltador(x, y) {
     this.physics.add.collider(saltador, platforms);
     this.physics.add.collider(player, saltador, mecanicaSaltador, null, this);
 }
-
+function mecanicaSaltador(player, saltador) {
+    if (saltador.body.touching.up) {
+        player.setVelocityY(-600);
+    }
+}
 function createMovingPlatform(x, y, displayWidth, distance) {
     var movingPlatform = this.physics.add.sprite(x, y, "ground");
     movingPlatform.setImmovable(true);
@@ -190,16 +195,6 @@ function createMovingPlatform(x, y, displayWidth, distance) {
     this.physics.add.collider(player, movingPlatform);
 }
 
-function crearPinchos(x, y) {
-    var pinchitos = this.physics.add.sprite(x, y, "pinchos");
-    pinchitos.enableBody = true;
-    pinchitos.body.allowGravity = false;
-    pinchitos.body.immovable = true;
-    this.physics.add.collider(pinchitos, platforms);
-    this.physics.add.collider(player, pinchitos, chocarPinchos, null, this);
-
-}
-
 function crearCannon(x, y) {
     var cannon = this.add.sprite(x, y, 'cannon').setScale(2.2).setDepth(1);
     this.anims.create({
@@ -211,7 +206,7 @@ function crearCannon(x, y) {
     cannon.anims.play('cannonFire');
 
     //proyectil
-    var proyectil = this.physics.add.sprite(x, y+10, "proyectil");
+    var proyectil = this.physics.add.sprite(x, y + 10, "proyectil");
     proyectil.setImmovable(true);
     proyectil.body.allowGravity = false;
     proyectil.refreshBody();
@@ -228,10 +223,16 @@ function crearCannon(x, y) {
     this.physics.add.collider(player, proyectil, chocarPinchos, null, this);
 }
 
-function mecanicaSaltador(player, saltador) {
-    if (saltador.body.touching.up) {
-        player.setVelocityY(-600);
-    }
+function crearEnemigo (x, y,distancia) {
+    enemigo = this.physics.add.sprite(x, y, "enemigo");
+    // enemigo.setImmovable(true);
+    enemigo.body.allowGravity = false;
+    enemigo.refreshBody();
+    enemigo.body.velocity.x = 100;
+    enemigo.maxDistance = distancia;
+    enemigo.previousX = enemigo.x;
+    this.physics.add.collider(player, enemigo, chocarEnemigo, null, this);
+    this.physics.add.collider(enemigo, platforms);
 }
 
 function chocarEnemigo(player, baddie) {
@@ -279,6 +280,15 @@ function chocarEnemigo(player, baddie) {
         });
     }
 }
+function crearPinchos(x, y) {
+    var pinchitos = this.physics.add.sprite(x, y, "pinchos");
+    pinchitos.enableBody = true;
+    pinchitos.body.allowGravity = false;
+    pinchitos.body.immovable = true;
+    this.physics.add.collider(pinchitos, platforms);
+    this.physics.add.collider(player, pinchitos, chocarPinchos, null, this);
+
+}
 
 function chocarPinchos(player, baddie) {
     //if the collision is on the baddies head
@@ -304,17 +314,56 @@ function chocarPinchos(player, baddie) {
     }
 }
 
+
 function update() {
+    if (player.body.velocity.x !== 0 && iniciarLava == false) {
+        iniciarLava = true;
+    }
+
+    //si la lava llega a la altura del jugador, muere
+    if (lava.y <= player.y) {
+        player.disableBody(false, false);
+
+        //animate players death scene
+        var tween = this.tweens.add({
+            targets: player,
+            alpha: 0.3,
+            scaleX: 1.1,
+            scaleY: 1.1,
+            angle: 90,
+            x: player.x - 20,
+            y: player.y - 20,
+            ease: 'Linear',
+            duration: 200,
+            onComplete: function () {
+                restartGame(this);
+            },
+            onCompleteScope: this
+        });
+    }
 
     var standing = player.body.blocked.down || player.body.touching.down;
     handlePlayerMovement.call(this, standing);
     handleJumping.call(this, standing);
+
+    if (Math.abs(enemigo.x - enemigo.previousX) >= enemigo.maxDistance) {
+        switchDirection(enemigo);
+    }
+
+
 
     this.cameras.main.setBounds(0, -10000, config.width, config.height + 10000);
     this.cameras.main.startFollow(player, true, 0.1, 0.1);
     heightText.setText("Height: " + Math.round(player.y));//* -1/50
     heightText.setScrollFactor(0);
     wasStanding = standing;
+}
+
+function switchDirection(enemigo) {
+    //reverse velocity so baddie moves are same speed but in opposite direction
+    enemigo.body.velocity.x *= -1;
+    //reset count
+    enemigo.previousX = enemigo.x;
 }
 function createPlayer() {
     player = this.physics.add.sprite(650, 650, "hero");
@@ -425,3 +474,40 @@ function restartGame(game) {
 function collectCoin(player, coin) {
     coin.disableBody(true, true);
 }
+
+function createLava() {
+    // Crea la lava como un sprite utilizando un spritesheet
+    lava = this.add.sprite(550, config.height-70, 'lava').setScale(4).setDepth(10);
+    lava2 = this.add.rectangle(550, config.height, config.width, -50, 0xff0000).setDepth(9);
+
+    // lava.setOrigin(0, 1);
+    this.physics.add.existing(lava, true);
+  
+    // Establece la animación de subida de la lava
+    this.anims.create({
+      key: 'lavaRise',
+      frames: this.anims.generateFrameNumbers('lava', { start: 0, end: 3 }),
+      frameRate: 8,
+      repeat: -1
+    });
+
+    lava.anims.play('lavaRise');
+  
+    // Inicia el temporizador para que la lava suba periódicamente
+    lavaTimer = this.time.addEvent({
+      delay: 100, // Intervalo de tiempo en milisegundos
+      callback: riseLava, // Función a ejecutar cuando el temporizador se complete
+      callbackScope: this,
+      loop: true // Hacer que el temporizador se repita infinitamente
+    });
+  }
+  
+  function riseLava() {
+    if (iniciarLava) {
+        lava2.height -= lavaSpeed;
+        // lava2.body.height -= lavaSpeed;
+      // Hace que la lava suba cambiando su posición vertical
+        lava.y -= lavaSpeed;
+
+    }
+  }
