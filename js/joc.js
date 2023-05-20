@@ -20,6 +20,7 @@ var player,
     platforms,
     collapsingPlatforms,
     oneWayPlatforms,
+    enemigo,
     coins,
     cursors,
     acceleration = 1000,
@@ -37,6 +38,7 @@ function preload() {
     this.load.image("fallPlat", "oneway-platform.png");
     this.load.image("coin", "coin.png");
     this.load.image("movimientoPlat", "one-way-platform.jpg");
+    this.load.image("enemigo", "baddie.jpg");
 }
 
 
@@ -49,13 +51,17 @@ function create() {
     logo.alpha = 0.4;
     logo.setScale(0.5);
 
+    createPlayer.call(this);
+
     platforms = this.physics.add.staticGroup();
     collapsingPlatforms = this.physics.add.staticGroup();
     coins = this.physics.add.staticGroup();
 
-    // var platformHeight = 130;
-    // var numPlatforms = Math.ceil((config.height + 10000) / platformHeight);
-
+    // Columnas de derecha e izquierda
+    var leftColumn = this.add.rectangle(25, config.height / 2, 100, config.height + 10000, 0xff0000);
+    var rightColumn = this.add.rectangle(config.width - 25, config.height / 2, 100, config.height + 10000, 0xff0000);
+    this.physics.add.existing(leftColumn, true);
+    this.physics.add.existing(rightColumn, true);
     //hacer la primera plataforma que ocupe el 100% de la pantalla y que sea la que esté más abajo
     platforms.create(config.width / 2, config.height, "ground").setScale(3).refreshBody();
     //crear una plataforma en el centro de la pantalla
@@ -67,79 +73,64 @@ function create() {
     collapsingPlatforms.create(config.width / 2 - 150, 40, "fallPlat").setScale(0.5).refreshBody();
     collapsingPlatforms.create(config.width / 2 +380, 40, "fallPlat").setScale(0.5).refreshBody();
     platforms.create(config.width / 2 +120, -80, "ground").setScale(0.5).refreshBody();
-    coins.create(config.width / 2, 400, "coin").setScale(1).refreshBody();
+    createMovingPlatform.call(this, config.width / 2 - 100, -200, 150, -300);
 
-
-
-
-    var movingPlatform = this.physics.add.sprite(config.width / 2 -100, -200, "ground");
-    movingPlatform.setImmovable(true);
-    movingPlatform.setScale(0.5);
-    movingPlatform.body.allowGravity = false;
-    // movingPlatform.body.checkCollision.up = false;
-    // movingPlatform.body.checkCollision.left = false;
-    // movingPlatform.body.checkCollision.right = false;
-
-    // Ajusta el tamaño de la plataforma móvil
-    movingPlatform.displayWidth = 150;
-    movingPlatform.refreshBody();
-
-    // Crea la animación de movimiento de derecha a izquierda
+    //barredora
+    platforms.create(config.width / 2 -400, -320, "ground").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2 -400, -460, "ground").setScale(0.5).refreshBody();
+    var platBarredora = this.physics.add.sprite(config.width / 2 - 460, -390, "ground").setScale(0.35).setAngle(90);
+    platBarredora.setSize(platBarredora.height, platBarredora.width, true);
+    platBarredora.setImmovable(true);
+    platBarredora.body.allowGravity = false;
+    platBarredora.refreshBody();
+    // Configurar la animación de movimiento
     this.tweens.add({
-        targets: movingPlatform,
-        x: movingPlatform.x - 300, // Distancia total que se moverá la plataforma
-
-        ease: 'Linear', // Tipo de interpolación
-        duration: 2000, // Duración en milisegundos
-        repeat: -1, // -1 para repetir infinitamente
-        yoyo: true // Hace que la animación se repita hacia adelante y hacia atrás
+        targets: platBarredora,
+        x: platBarredora.x + 200,
+        esase: 'Linear',
+        duration: 4000,
+        repeat: -1,
+        yoyo: true
     });
+
+    crearSaltador.call(this, -100, 490);
+    crearSaltador.call(this, 100, 580);
     
 
-
-    //generar el resto de plataformas pero la primera un poco mas arriba
-    //generatePlatforms(numPlatforms - 1)
-
-    // Create left and right columns
-    var leftColumn = this.add.rectangle(25, config.height / 2, 100, config.height + 10000, 0xff0000);
-    var rightColumn = this.add.rectangle(config.width - 25, config.height / 2, 100, config.height + 10000, 0xff0000);
-    this.physics.add.existing(leftColumn, true);
-    this.physics.add.existing(rightColumn, true);
-
-    player = this.physics.add.sprite(650, 650, "hero");
-    player.setCollideWorldBounds(true);
-
-    //Set bounce to 0, so our hero just lands directly
-    player.setBounce(0);
-    //Set top speeds
-    player.body.maxVelocity.x = 340;
-    player.body.maxVelocity.y = 1000;
-
-    cursors = this.input.keyboard.createCursorKeys();
+    // Position the player on the lowest platform
+    // player.x = lowestPlatform.x;
+    // player.y = lowestPlatform.y - 80;
+    player.x = 700;
+    player.y=-100;
 
     heightText = this.add.text(16, 50, "Height: 0", {
         fontSize: "24px",
         fill: "#fff"
     });
 
-    // coins = this.physics.add.group({
-    //     key: 'coin',
-    //     repeat: 1,
-    //     setXY: { x: 12, y: 0, stepX: 70 }
-    // });
-    
+    //enemigos
+    enemigo = this.physics.add.sprite(650, 650, "enemigo");
+    enemigo.setCollideWorldBounds(true);
+    //que spawnee en -400, -280
+    enemigo.x = config.width / 2 -400;
+    enemigo.y = -280;
+
 
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player, collapsingPlatforms, shakePlatform, checkOneWay, this);
-    this.physics.add.collider(coins, platforms);
-    this.physics.add.collider(player, coins);
-    this.physics.add.collider(player, movingPlatform);
+
+    //enemigos
+    this.physics.add.collider(enemigo, platforms);
 
 
-    this.physics.add.overlap(player, coins, collectCoin, null, this);
+    // this.physics.add.overlap(player, coins, collectCoin, null, this);
     this.physics.add.collider(player, leftColumn);
     this.physics.add.collider(player, rightColumn);
     this.physics.add.overlap(player, null, this);
+
+
+    //enemigos
+    this.physics.add.collider(player, enemigo, chocarEnemigo, null, this);  
 
     // Find the lowest platform
     var lowestPlatform = platforms.getChildren()[0];
@@ -149,84 +140,154 @@ function create() {
         }
     });
 
-    // Position the player on the lowest platform
-    player.x = lowestPlatform.x;
-    player.y = lowestPlatform.y - 80;
-
-    // function generatePlatforms(count) {
-    //     for (var i = 0; i < count; i++) {
-    //         platforms.create(config.width / 3, -10000 + i * platformHeight, "ground").refreshBody();
-    //         platforms.children.entries[i].body.checkCollision.down = false;
-    //         platforms.children.entries[i].body.checkCollision.left = false;
-    //         platforms.children.entries[i].body.checkCollision.right = false;
-    //     }
-    // }
 }
 
+function crearSaltador(x,y){
+    var saltador = this.physics.add.sprite(650, 650, "coin").setScale(1.5);
+    saltador.setCollideWorldBounds(true);
+    saltador.x = config.width / 2 -x;
+    saltador.y =y;
+    saltador.setImmovable(true);
+    saltador.body.allowGravity = false;
+    saltador.body.checkCollision.down = false;
+    this.physics.add.collider(saltador, platforms);
+    this.physics.add.collider(player, saltador, mecanicaSaltador, null, this);
+}
+
+function createMovingPlatform(x, y, displayWidth, distance) {
+    var movingPlatform = this.physics.add.sprite(x, y, "ground"); 
+    movingPlatform.setImmovable(true);
+    movingPlatform.setScale(0.5);
+    movingPlatform.body.allowGravity = false;
+    movingPlatform.displayWidth = displayWidth;
+    movingPlatform.refreshBody(); 
+  
+    this.tweens.add({
+      targets: movingPlatform,
+      x: movingPlatform.x + distance,
+      ease: "Linear",
+      duration: 2000,
+      repeat: -1,
+      yoyo: true,
+    });
+  
+    this.physics.add.collider(player, movingPlatform);
+  }
+
+function mecanicaSaltador(player, saltador) {
+    if (saltador.body.touching.up) {
+        player.setVelocityY(-600);
+    }
+}
+
+    function chocarEnemigo(player, baddie) {
+        //if the collision is on the baddies head
+        if (baddie.body.touching.up) {
+            // set baddie as being hit by removing physics
+            baddie.disableBody(false, false);
+            //make player jump up in the air a little bit
+            player.setVelocityY(-1000);
+
+            //animate baddie, fading out and getting bigger
+            var tween = this.tweens.add({
+                targets: baddie,
+                alpha: 0.3,
+                scaleX: 1.5,
+                scaleY: 1.5,
+                ease: 'Linear',
+                duration: 200,
+                onComplete: function() {
+                    //remove the game object
+                    destroyGameObject(baddie);
+                },
+            });
+        }
+        //otherwise you've hit baddie, but not on the head. This makes you die
+        else {
+            //set player to dead
+            player.disableBody(false, false);
+
+            //animate players death scene
+            var tween = this.tweens.add({
+                targets: player,
+                alpha: 0.3,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                angle: 90,
+                x: player.x - 20,
+                y: player.y - 20,
+                ease: 'Linear',
+                duration: 200,
+                onComplete: function() {
+                    restartGame(this);
+                },
+                onCompleteScope: this
+            });
+        }
+    }
 
 function update() {
 
     var standing = player.body.blocked.down || player.body.touching.down;
-    //if left key is down then move left
-    if (cursors.left.isDown) {
-        //if hero is on ground then use full acceleration
-        if (standing) {
-            player.setAccelerationX(-acceleration);
-        } else {
-            //if hero is in the air then accelerate slower
-            player.setAccelerationX(-acceleration / 3);
-        }
-    } else if (cursors.right.isDown) {
-        //same deal but for right arrow
-        if (standing) {
-            player.setAccelerationX(acceleration);
-        } else {
-            player.setAccelerationX(acceleration / 3);
-        }
-    } else {
-        //if neither left or right arrow is down then...
-        //if hero is close to having no velocity either left or right then set velocity to 0. This stops jerky back and forth as the hero comes to a halt. i.e. as we slow hero down, below a certain point we just stop them moving altogether as it looks smoother
-        if (
-            Math.abs(player.body.velocity.x) < 10 &&
-            Math.abs(player.body.velocity.x) > -10
-        ) {
-            player.setVelocityX(0);
-            player.setAccelerationX(0);
-        } else {
-            //if our hero isn't moving left or right then slow them down
-            //this velocity.x check just works out whether we are setting a positive (going right) or negative (going left) number
-            player.setAccelerationX(
-                (player.body.velocity.x > 0 ? -1 : 1) * acceleration / 3
-            );
-        }
-    }
+    handlePlayerMovement.call(this, standing);
+    handleJumping.call(this, standing);
 
-    //get current time in seconds
-    var d = new Date();
-    var time = d.getTime();
-
-    //if we have just left the ground set edge time for 100ms time
-    if (!standing && wasStanding) {
-        edgeTimer = time + 100;
-    }
-
-    if ((standing || time <= edgeTimer) && cursors.up.isDown && !jumping) {
-        player.setVelocityY(jumpVelocity);
-        jumping = true;
-    }
-
-    if (!cursors.up.isDown) {
-        if (player.body.touching.down) {
-            jumping = false;
-        }
-    }
     this.cameras.main.setBounds(0, -10000, config.width, config.height + 10000);
     this.cameras.main.startFollow(player, true, 0.1, 0.1);
     heightText.setText("Height: " + Math.round(player.y));//* -1/50
     heightText.setScrollFactor(0);
     wasStanding = standing;
 }
+function createPlayer() {
+    player = this.physics.add.sprite(650, 650, "hero");
+    player.setCollideWorldBounds(true);
+    player.setBounce(0);
+    player.body.maxVelocity.x = 340;
+    player.body.maxVelocity.y = 1000;
+    cursors = this.input.keyboard.createCursorKeys();
+}
 
+function handlePlayerMovement(standing) {
+    if (cursors.left.isDown) {
+      if (standing) {
+        player.setAccelerationX(-acceleration);
+      } else {
+        player.setAccelerationX(-acceleration / 3);
+      }
+    } else if (cursors.right.isDown) {
+      if (standing) {
+        player.setAccelerationX(acceleration);
+      } else {
+        player.setAccelerationX(acceleration / 3);
+      }
+    } else {
+      if (Math.abs(player.body.velocity.x) < 10 && Math.abs(player.body.velocity.x) > -10) {
+        player.setVelocityX(0);
+        player.setAccelerationX(0);
+      } else {
+        player.setAccelerationX((player.body.velocity.x > 0 ? -2 : 2) * acceleration / 3);
+      }
+    }
+}
+
+function handleJumping(standing) {
+    const time = new Date().getTime();
+    
+    if (!standing && wasStanding) {
+      edgeTimer = time + 100;
+    }
+  
+    if ((standing || time <= edgeTimer) && cursors.up.isDown && !jumping) {
+      player.setVelocityY(jumpVelocity);
+      jumping = true;
+    }
+  
+    if (!cursors.up.isDown) {
+      if (player.body.touching.down) {
+        jumping = false;
+      }
+    }
+}
 
 function shakePlatform(player, platform) {
     //only make platform shake if player is standing on it
@@ -279,6 +340,9 @@ function destroyGameObject(gameObject) {
     // Removes any game object from the screen
     gameObject.destroy();
 }
+    function restartGame(game) {
+        game.scene.restart();
+    }
 
 function collectCoin(player, coin) {
     coin.disableBody(true, true);
