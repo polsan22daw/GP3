@@ -7,8 +7,8 @@ escenaComienzo.preload = function () {
 
 escenaComienzo.create = function () {
     var musica = this.sound.add('inicio');
-    musica.play({ loop: true});
-    
+    musica.play({ loop: true });
+
     var animacion = this.add.sprite(550, 300, 'pj').setScale(3).setDepth(1);
 
     // Definir la configuración de la animación
@@ -53,10 +53,14 @@ var escenaFinal = new Phaser.Scene('escenaFinal');
 
 escenaFinal.preload = function () {
     this.load.spritesheet('pj', 'assets/pj.png', { frameWidth: 50, frameHeight: 37 });
+    this.load.audio('gameover', 'assets/audios/gameover.mp3');
 };
 
+var musicaFinal;
 escenaFinal.create = function () {
     // escenaComienzo.scene.restart();
+    musicaFinal = this.sound.add('gameover');
+    musicaFinal.play({ loop: true });
 
     var animacion = this.add.sprite(550, 300, 'pj').setScale(3).setDepth(1);
 
@@ -82,18 +86,20 @@ escenaFinal.create = function () {
         escenaFinal.scene.start('escenaComienzo');
         //restart the scene to reset all the variables!
         escenaComienzo.scene.restart();
+        musicaFinal.stop();
+
     });
 }
 
 var escenaGanar = new Phaser.Scene('escenaGanar');
 
-    escenaGanar.preload = function () {
-        this.load.audio('ganar', 'assets/audios/victoria.mp3');
-    };
+escenaGanar.preload = function () {
+    this.load.audio('ganar', 'assets/audios/victoria.mp3');
+};
 
 escenaGanar.create = function () {
     var musica = this.sound.add('ganar');
-    musica.play({ loop: true});
+    musica.play({ loop: true });
     //add some text
     this.add.text(550, 460, 'HAS GANADO\nCLICK TO START', { fontSize: 32, color: '#ffffff', align: 'center' }).setShadow(4, 4, "#000000", 2, false, true).setOrigin(0.5).setDepth(3);;
     this.input.on('pointerdown', function (pointer) {
@@ -105,27 +111,33 @@ escenaGanar.create = function () {
 };
 
 function ganarJuego(player, finish) {
+    musicaJuego.stop();
+    musicaJuego.destroy();
     this.scene.start('escenaGanar');
-  }
+}
 
 var escenaJoc = new Phaser.Scene('escenaJoc');
 
 escenaJoc.init = function () {
-        player = null,
+    player = null,
+        musicaJuego = null,
+        efectoGolpe = null,
         vidasOutlines = [],
         vidas = [],
         maxVidas = 3,
         vulnerableTime = 1000,
         murcielago = null;
-        murcielagos = [];
-        platforms = null,
+    murcielagos = [];
+    platforms = null,
         collapsingPlatforms = null,
         oneWayPlatforms = null,
         enemigo = null,
         coins = null,
         pinchos = null,
         proyectil = null,
+        proyectiles = [],
         cannon = null,
+        canones = [],
         lava = null,
         lava2 = null,
         lavaTimer = null,
@@ -161,11 +173,12 @@ escenaJoc.preload = function () {
     this.load.spritesheet('pj', 'pj.png', { frameWidth: 50, frameHeight: 37 });
     this.load.image("vida", "vida.png");
     this.load.image("sinvida", "sinvida.png");
+    this.load.audio('musicaJuego', 'audios/juego.mp3');
+    this.load.audio('golpeado', 'audios/golpe.wav');
 }
 
 
 let isPlayerMoving = false;
-
 
 escenaJoc.create = function () {
     this.physics.world.setBounds(-100, -10000, config.width + 100, config.height + 10000);
@@ -182,9 +195,10 @@ escenaJoc.create = function () {
     fondo.setOrigin(0.5, 0.5);
 
     // Ajustar la escala del tileSprite para que la imagen se repita verticalmente
-    fondo.setScale(1, (config.height + 10000) / fondo.height);
+    fondo.setScale(1, (config.height + 15000) / fondo.height);
 
     createPlayer.call(this);
+
 
     if (lava == null) {
         createLava.call(this);
@@ -226,8 +240,8 @@ escenaJoc.create = function () {
     rightColumn.setOrigin(0.5, 0.5);
 
     // Ajustar el tamaño de las columnas
-    leftColumn.setScale(1, (config.height + 10000) / leftColumn.height);
-    rightColumn.setScale(1, (config.height + 10000) / rightColumn.height);
+    leftColumn.setScale(1, (config.height + 15000) / leftColumn.height);
+    rightColumn.setScale(1, (config.height + 15000) / rightColumn.height);
 
 
     this.physics.add.existing(leftColumn, true);
@@ -250,8 +264,8 @@ escenaJoc.create = function () {
     collapsingPlatforms.create(config.width / 2 - 150, -40, "fallPlat").setScale(0.5).refreshBody();
     collapsingPlatforms.create(config.width / 2 + 380, -40, "fallPlat").setScale(0.5).refreshBody();
     platforms.create(config.width / 2 + 120, -180, "ground").setScale(0.5).refreshBody();
-    createMovingPlatform.call(this, 500, -300, 150, -350);
-    createMovingPlatform.call(this, 600, -425, 150, 350);
+    createMovingPlatformX.call(this, 500, -300, 150, -350);
+    createMovingPlatformX.call(this, 600, -425, 150, 350);
     platforms.create(config.width / 2 - 275, -550, "ground").setScale(0.75).refreshBody();
     platforms.create(config.width / 2 + 50, -680, "ground").setScale(0.3).refreshBody();
     platforms.create(config.width / 2 + 335, -810, "ground").setScale(0.3).refreshBody();
@@ -277,24 +291,177 @@ escenaJoc.create = function () {
     collapsingPlatforms.create(600, -2400, "fallPlat").setScale(0.5).refreshBody();
     collapsingPlatforms.create(800, -2520, "fallPlat").setScale(0.5).refreshBody();
     platforms.create(1000, -2640, "ground").setScale(0.25).refreshBody();
-    platforms.create(550, -2770, "ground").setScale(0.75).refreshBody();
+    createMovingPlatformX.call(this, 800, -2770, 150, -150);
+    createMovingPlatformX.call(this, 350, -2770, 100, -80);
+    platforms.create(100, -2910, "ground").setScale(0.25).refreshBody();
+    // platforms.create(800, -3080, "ground").setScale(1).refreshBody();
+    var suelo = this.add.rectangle(625, -3000, 800, 50, 0x00ff00);
+    this.physics.add.existing(suelo, true);
+    this.physics.add.collider(player, suelo);
+    var cuadrado1 = this.add.rectangle(400, -3050, 150, 100, 0x00ff00);
+    this.physics.add.existing(cuadrado1, true);
+    this.physics.add.collider(player, cuadrado1);
+    var cuadrado2 = this.add.rectangle(675, -3050, 150, 100, 0x00ff00);
+    this.physics.add.existing(cuadrado2, true);
+    this.physics.add.collider(player, cuadrado2);
+    var cuadrado3 = this.add.rectangle(950, -3050, 150, 100, 0x00ff00);
+    this.physics.add.existing(cuadrado3, true);
+    this.physics.add.collider(player, cuadrado3);
+    var techo = this.add.rectangle(550, -3415, 650, 400, 0x00ff00);
+    this.physics.add.existing(techo, true);
+    this.physics.add.collider(player, techo);
+    var canon2=this.add.sprite(1060, -3155, 'cannon').setScale(2.2).setDepth(1);//rever
+    //reverse cannon
+    canon2.setFlipX(true);
+    this.anims.create({ 
+        key: 'cannonFire',
+        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
+        frameRate: 1,
+        repeat: -1
+    });
+    canon2.anims.play('cannonFire');
+    //proyectil
+    var proyectil2 = this.physics.add.sprite(1060, -3150, "proyectil");
+    // proyectil.setImmovable(true);
+    proyectil2.body.allowGravity = false;
+    proyectil2.setOrigin(.5, .5);
+    proyectil2.setCollideWorldBounds(true);
+    proyectil2.refreshBody();
+    this.tweens.add({
+        targets: proyectil2,
+        x: proyectil2.x - 1300,
+        ease: "Linear",
+        duration: 2500,
+        repeat: -1,
+        delay: 2000,
+    });
+    this.physics.add.collider(player, proyectil2, chocarEnemigo, null, this);
+    createMovingPlatformY.call(this, 950, -3120, 100, -400);
+    var plat2=platforms.create(950, -3607, "ground").setScale(0.5).refreshBody();
+    plat2.body.checkCollision.down = false;
+    crearSaltador.call(this, 800, -3690);
+    var columna3 = this.add.rectangle(670, -3690, 95, 400, 0x00ff00);
+    this.physics.add.existing(columna3, true);
+    this.physics.add.collider(player, columna3);
+    crearPinchos.call(this, 669, -3905);
+    crearSaltador.call(this, 550, -3690);
+    var columna4 = this.add.rectangle(430, -3690, 95, 400, 0x00ff00);
+    this.physics.add.existing(columna4, true);
+    this.physics.add.collider(player, columna4);
+    crearPinchos.call(this, 429, -3905);
+    crearSaltador.call(this, 310, -3690);
+    platforms.create(100, -3970, "ground").setScale(0.25).refreshBody();
+    collapsingPlatforms.create(400, -4110, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(650, -4230, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(400, -4350, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(650, -4470, "fallPlat").setScale(0.5).refreshBody();
+    platforms.create(950, -4590, "ground").setScale(0.5).refreshBody();
+    var suelo3 = this.add.rectangle(425, -4710, 700, 20, 0x00ff00);
+    this.physics.add.existing(suelo3, true);
+    this.physics.add.collider(player, suelo3);
+    var canon3=this.add.sprite(1060, -4775, 'cannon').setScale(2.2).setDepth(1);//rever
+    //reverse cannon
+    canon3.setFlipX(true);
+    this.anims.create({ 
+        key: 'cannonFire',
+        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
+        frameRate: 1,
+        repeat: -1
+    });
+    canon3.anims.play('cannonFire');
+    //proyectil
+    var proyectil3 = this.physics.add.sprite(1060, -4770, "proyectil");
+    // proyectil.setImmovable(true);
+    proyectil3.body.allowGravity = false;
+    proyectil3.setOrigin(.5, .5);
+    proyectil3.setCollideWorldBounds(true);
+    proyectil3.refreshBody();
+    this.tweens.add({
+        targets: proyectil3,
+        x: proyectil3.x - 1300,
+        ease: "Linear",
+        duration: 2700,
+        repeat: -1,
+        delay: 1500,
+    });
+    this.physics.add.collider(player, proyectil3, chocarEnemigo, null, this);
+    var suelo4 = this.add.rectangle(615, -4825, 820, 20, 0x00ff00);
+    this.physics.add.existing(suelo4, true);
+    this.physics.add.collider(player, suelo4);
+    var canon4=this.add.sprite(35, -4885, 'cannon').setScale(2.2).setDepth(1);//rever
+    this.anims.create({
+        key: 'cannonFire',
+        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
+        frameRate: 1,
+        repeat: -1
+    });
+    canon4.anims.play('cannonFire');
+    //proyectil
+    var proyectil4 = this.physics.add.sprite(35, -4880, "proyectil");
+    // proyectil.setImmovable(true);
+    proyectil4.body.allowGravity = false;
+    proyectil4.setOrigin(.5, .5);
+    proyectil4.setCollideWorldBounds(true);
+    proyectil4.refreshBody();
+    this.tweens.add({
+        targets: proyectil4,
+        x: proyectil4.x + 1300,
+        ease: "Linear",
+        duration: 2300,
+        repeat: -1,
+        delay: 3300,
+    });
 
-
-
-
-
-
-
-
-
-    platforms.create(275, -2980, "ground").setScale(1).refreshBody();
-    platforms.create(825, -2980, "ground").setScale(1).refreshBody();
-    //add finish rectangle
-    var finish = this.add.rectangle(550, -2980, 200, 40, 0x00ff00);
-    this.physics.add.existing(finish, true);
-    this.physics.add.overlap(player, finish, ganarJuego, null, this);
-
+    this.physics.add.collider(player, proyectil4, chocarEnemigo, null, this);
+    var suelo5 = this.add.rectangle(425, -4940, 700, 20, 0x00ff00);
+    this.physics.add.existing(suelo5, true);
+    this.physics.add.collider(player, suelo5);
+    var canon5=this.add.sprite(1060, -5005, 'cannon').setScale(2.2).setDepth(1);//rever
+    //reverse cannon
+    canon5.setFlipX(true);
+    this.anims.create({
+        key: 'cannonFire',
+        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
+        frameRate: 1,
+        repeat: -1
+    });
+    canon5.anims.play('cannonFire');
+    //proyectil
+    var proyectil5 = this.physics.add.sprite(1060, -5000, "proyectil");
+    // proyectil.setImmovable(true);
+    proyectil5.body.allowGravity = false;
+    proyectil5.setOrigin(.5, .5);
+    proyectil5.setCollideWorldBounds(true);
+    proyectil5.refreshBody();
+    this.tweens.add({
+        targets: proyectil5,
+        x: proyectil5.x - 1300,
+        ease: "Linear",
+        duration: 2700,
+        repeat: -1,
+        delay: 1500,
+    });
+    this.physics.add.collider(player, proyectil5, chocarEnemigo, null, this);
+    var suelo6 = this.add.rectangle(765, -5055, 520, 20, 0x00ff00);
+    this.physics.add.existing(suelo6, true);
+    this.physics.add.collider(player, suelo6);
+    var suelo7 = this.add.rectangle(195, -5055, 240, 20, 0x00ff00);
+    this.physics.add.existing(suelo7, true);
+    this.physics.add.collider(player, suelo7);
     
+
+
+
+
+
+
+    // platforms.create(550, -2770, "ground").setScale(0.75).refreshBody();
+    // platforms.create(275, -2980, "ground").setScale(1).refreshBody();
+    // platforms.create(825, -2980, "ground").setScale(1).refreshBody();
+    // //add finish rectangle
+    // var finish = this.add.rectangle(550, -2980, 200, 40, 0x00ff00);
+    // this.physics.add.existing(finish, true);
+    // this.physics.add.overlap(player, finish, ganarJuego, null, this);
 
 
 
@@ -317,11 +484,17 @@ escenaJoc.create = function () {
     //     yoyo: true
     // });
 
+
+    efectoGolpe = this.sound.add('golpeado');
+
+    musicaJuego = this.sound.add('musicaJuego');
+    musicaJuego.play({ loop: true });
+
     // Position the player on the lowest platform
     // player.x = lowestPlatform.x;
     // player.y = lowestPlatform.y - 80;
-    player.x = 450;
-    player.y = -2820;
+    player.x = 950;
+    player.y = -5060;
 
     heightText = this.add.text(16, 50, "Height: 0", {
         fontSize: "24px",
@@ -333,9 +506,15 @@ escenaJoc.create = function () {
     this.physics.add.collider(player, platform2);
     this.physics.add.collider(player, collapsingPlatforms, shakePlatform, checkOneWay, this);
     this.physics.add.collider(player, square);
-    
 
-    
+
+    for (var i = 0; i < proyectiles.length; i++) {
+        var proyectil = proyectiles[i];
+        this.physics.add.collider(player, proyectil, chocarEnemigo, null, this);
+    };
+
+
+
     // this.physics.add.collider(murcielago, platforms);
     for (var i = 0; i < murcielagos.length; i++) {
         var murcielago = murcielagos[i];
@@ -393,7 +572,7 @@ function mecanicaSaltador(player, saltador) {
         player.setVelocityY(-760);
     }
 }
-function createMovingPlatform(x, y, displayWidth, distance) {
+function createMovingPlatformX(x, y, displayWidth, distance) {
     var movingPlatform = this.physics.add.sprite(x, y, "ground");
     movingPlatform.setImmovable(true);
     movingPlatform.setScale(0.5);
@@ -408,7 +587,31 @@ function createMovingPlatform(x, y, displayWidth, distance) {
         targets: movingPlatform,
         x: movingPlatform.x + distance,
         ease: "Linear",
-        duration: 2000,
+        duration: 4000,
+        repeat: -1,
+        yoyo: true,
+    });
+
+    this.physics.add.collider(player, movingPlatform);
+
+}
+
+function createMovingPlatformY(x, y, displayWidth, distance) {
+    var movingPlatform = this.physics.add.sprite(x, y, "ground");
+    movingPlatform.setImmovable(true);
+    movingPlatform.setScale(0.5);
+    movingPlatform.body.allowGravity = false;
+    movingPlatform.displayWidth = displayWidth;
+    movingPlatform.body.checkCollision.down = false;
+    movingPlatform.body.checkCollision.left = false;
+    movingPlatform.body.checkCollision.right = false;
+    movingPlatform.refreshBody();
+
+    this.tweens.add({
+        targets: movingPlatform,
+        y: movingPlatform.y + distance,
+        ease: "Linear",
+        duration: 4000,
         repeat: -1,
         yoyo: true,
     });
@@ -442,11 +645,12 @@ function crearCannon(x, y) {
         repeat: -1,
         delay: 2000,
     });
-    this.physics.add.collider(player, proyectil, chocarEnemigo, null, this);
+    canones.push(cannon);
+    proyectiles.push(proyectil);
 
 }
 function crearMurcielago(x, y, distancia) {
-    
+
     murcielago = this.physics.add.sprite(x, y, "murcielago");
     murcielago.setOrigin(.5, .5);
     murcielago.setCollideWorldBounds(true);
@@ -482,27 +686,27 @@ function crearEnemigo(x, y, distancia) {
 }
 
 function chocarEnemigo(player, baddie) {
- //baddie was hit on the head and hasn't already been hit
- if (baddie.body.touching.up && !baddie.hit) {
-    // set baddie as being hit and remove physics
-    baddie.disableBody(false, false);
-    player.setVelocityY(jumpVelocity);
+    //baddie was hit on the head and hasn't already been hit
+    if (baddie.body.touching.up && !baddie.hit) {
+        // set baddie as being hit and remove physics
+        baddie.disableBody(false, false);
+        player.setVelocityY(jumpVelocity);
 
-    //play baddies death animation
-    this.tweens.add({
-        targets: baddie,
-        alpha: 0.3,
-        scaleX: 1.5,
-        scaleY: 1.5,
-        ease: 'Linear',
-        duration: 200,
-        onComplete: function() {
-            destroyGameObject(baddie);
-        },
-    });
-}else{
-    jugadorTocado.call(this, player, baddie);
-}
+        //play baddies death animation
+        this.tweens.add({
+            targets: baddie,
+            alpha: 0.3,
+            scaleX: 1.5,
+            scaleY: 1.5,
+            ease: 'Linear',
+            duration: 200,
+            onComplete: function () {
+                destroyGameObject(baddie);
+            },
+        });
+    } else {
+        jugadorTocado.call(this, player, baddie);
+    }
 }
 
 
@@ -513,7 +717,7 @@ function playerVulnerable(game) {
         alpha: 1,
         ease: 'Linear',
         duration: 200,
-        onComplete: function() {
+        onComplete: function () {
             player.invulnerable = false;
         },
         onCompleteScope: this
@@ -581,6 +785,7 @@ function jugadorTocado(player, baddie) {
 
         //remove a heart from out count stored on the player object
         player.vidas -= 1;
+        efectoGolpe.play();
 
         //if hearts is 0 or less you're dead as you are out of lives
         if (player.vidas <= 0) {
@@ -597,7 +802,8 @@ function jugadorTocado(player, baddie) {
                 y: player.y - 20,
                 ease: 'Linear',
                 duration: 200,
-                onComplete: function() {
+                onComplete: function () {
+                    musicaJuego.stop();
                     restartGame(this);
                 },
                 onCompleteScope: this
@@ -661,12 +867,12 @@ escenaJoc.update = function () {
     //     switchDirection(enemigo);
     // }
 
-    
+
     //que haga un switchDirection por cada murcielago
 
     for (var i = 0; i < murcielagos.length; i++) {
         var murcielago = murcielagos[i];
-    
+
         if (Math.abs(murcielago.x - murcielago.previousX) >= murcielago.maxDistance) {
             switchDirection(murcielago);
         }
@@ -744,7 +950,7 @@ function handlePlayerMovement(standing) {
     if (cursors.left.isDown) {
         if (player.body.touching.down) {
             player.anims.play('left', true);
-        }else{
+        } else {
             player.anims.play('up', true);
         }
         player.setFlipX(true); // Invertir el sprite horizontalmente
@@ -756,7 +962,7 @@ function handlePlayerMovement(standing) {
     } else if (cursors.right.isDown) {
         if (player.body.touching.down) {
             player.anims.play('right', true);
-        }else{
+        } else {
             player.anims.play('up', true);
         }
         player.setFlipX(false); // Restaurar la orientación normal del sprite
@@ -772,7 +978,7 @@ function handlePlayerMovement(standing) {
                 player.setVelocityX(0);
                 player.setAccelerationX(0);
             } else {
-                player.setAccelerationX((player.body.velocity.x > 0 ? -2 : 2) * acceleration /1);
+                player.setAccelerationX((player.body.velocity.x > 0 ? -2 : 2) * acceleration / 1);
             }
         } else {
             player.anims.play('up', true);
@@ -807,31 +1013,31 @@ function handleJumping(standing) {
 
 function shakePlatform(player, platform) {
     if (player.body.blocked.down) {
-      // temblor de pantalla
-      this.cameras.main.shake(100, 0.001);
+        // temblor de pantalla
+        this.cameras.main.shake(100, 0.001);
 
-      // Hacer un tween yoyo para hacer temblar la plataforma hacia adelante y hacia atrás y hacia arriba y hacia abajo
-      var tween = this.tweens.add({
-        targets: platform,
-        yoyo: true,
-        repeat: 10,
-        x: {
-          from: platform.x,
-          to: platform.x + 0,
-        },
-        ease: 'Linear',
-        duration: 25,
-        onComplete: function () {
-          platform.setVisible(false);
-          platform.body.checkCollision.none = true;
-          setTimeout(function () {
-            platform.setVisible(true);
-            platform.body.checkCollision.none = false;
-          }, 4000);
-        }
-      });
+        // Hacer un tween yoyo para hacer temblar la plataforma hacia adelante y hacia atrás y hacia arriba y hacia abajo
+        var tween = this.tweens.add({
+            targets: platform,
+            yoyo: true,
+            repeat: 10,
+            x: {
+                from: platform.x,
+                to: platform.x + 0,
+            },
+            ease: 'Linear',
+            duration: 25,
+            onComplete: function () {
+                platform.setVisible(false);
+                platform.body.checkCollision.none = true;
+                setTimeout(function () {
+                    platform.setVisible(true);
+                    platform.body.checkCollision.none = false;
+                }, 4000);
+            }
+        });
     }
-  }
+}
 
 function checkOneWay(player, oneway) {
     //if player is higher up the screen then the plaform then enable the collision
@@ -860,6 +1066,7 @@ function destroyGameObject(gameObject) {
     gameObject.destroy();
 }
 function restartGame(scene) {
+    musicaJuego.stop();
     escenaJoc.scene.start('escenaFinal');
     // escenaJoc.scene.start('escenaJoc');
 }
