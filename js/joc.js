@@ -195,7 +195,7 @@ escenaJoc.create = function () {
     fondo.setOrigin(0.5, 0.5);
 
     // Ajustar la escala del tileSprite para que la imagen se repita verticalmente
-    fondo.setScale(1, (config.height + 15000) / fondo.height);
+    fondo.setScale(1, (config.height + 15200) / fondo.height);
 
     createPlayer.call(this);
 
@@ -240,8 +240,8 @@ escenaJoc.create = function () {
     rightColumn.setOrigin(0.5, 0.5);
 
     // Ajustar el tamaño de las columnas
-    leftColumn.setScale(1, (config.height + 15000) / leftColumn.height);
-    rightColumn.setScale(1, (config.height + 15000) / rightColumn.height);
+    leftColumn.setScale(1, (config.height + 15200) / leftColumn.height);
+    rightColumn.setScale(1, (config.height + 15200) / rightColumn.height);
 
 
     this.physics.add.existing(leftColumn, true);
@@ -270,7 +270,7 @@ escenaJoc.create = function () {
     platforms.create(config.width / 2 + 50, -680, "ground").setScale(0.3).refreshBody();
     platforms.create(config.width / 2 + 335, -810, "ground").setScale(0.3).refreshBody();
     platforms.create(config.width / 2 + 5, -930, "ground").setScale(0.7).refreshBody();
-    crearPinchos.call(this, 555, -957);
+    crearPinchos.call(this, 555, -957, false);
     platforms.create(config.width / 2 + -414, -1080, "ground").setScale(0.3).refreshBody();
     platforms.create(config.width / 2 + -95, -1210, "ground").setScale(0.6).refreshBody();
     platforms.create(config.width / 2 + 355, -1210, "ground").setScale(0.6).refreshBody();
@@ -281,11 +281,11 @@ escenaJoc.create = function () {
     this.physics.add.existing(square, true);
     crearSaltador.call(this, 980, -1330);
     crearSaltador.call(this, 820, -1550);
-    crearSaltador.call(this, 980, -1770);
-    crearCannon.call(this, 35, -2190);
-    crearPinchos.call(this, 625, -2041);
-    crearPinchos.call(this, 425, -2041);
-    crearPinchos.call(this, 225, -2041);
+    crearSaltador.call(this, 980, -1730);
+    crearCannon.call(this, 35, -2190, 3000, false);
+    crearPinchos.call(this, 625, -2041, false);
+    crearPinchos.call(this, 425, -2041, false);
+    crearPinchos.call(this, 225, -2041, false);
     crearSaltador.call(this, 120, -2140);
     collapsingPlatforms.create(400, -2280, "fallPlat").setScale(0.5).refreshBody();
     collapsingPlatforms.create(600, -2400, "fallPlat").setScale(0.5).refreshBody();
@@ -298,44 +298,21 @@ escenaJoc.create = function () {
     var suelo = this.add.rectangle(625, -3000, 800, 50, 0x00ff00);
     this.physics.add.existing(suelo, true);
     this.physics.add.collider(player, suelo);
-    var cuadrado1 = this.add.rectangle(400, -3050, 150, 100, 0x00ff00);
+    var cuadrado1 = this.add.rectangle(390, -3050, 130, 100, 0x00ff00);
     this.physics.add.existing(cuadrado1, true);
     this.physics.add.collider(player, cuadrado1);
-    var cuadrado2 = this.add.rectangle(675, -3050, 150, 100, 0x00ff00);
+    var cuadrado2 = this.add.rectangle(675, -3050, 130, 100, 0x00ff00);
     this.physics.add.existing(cuadrado2, true);
     this.physics.add.collider(player, cuadrado2);
-    var cuadrado3 = this.add.rectangle(950, -3050, 150, 100, 0x00ff00);
+    var cuadrado3 = this.add.rectangle(960, -3050, 130, 100, 0x00ff00);
     this.physics.add.existing(cuadrado3, true);
     this.physics.add.collider(player, cuadrado3);
     var techo = this.add.rectangle(550, -3415, 650, 400, 0x00ff00);
     this.physics.add.existing(techo, true);
     this.physics.add.collider(player, techo);
-    var canon2=this.add.sprite(1060, -3155, 'cannon').setScale(2.2).setDepth(1);//rever
-    //reverse cannon
-    canon2.setFlipX(true);
-    this.anims.create({ 
-        key: 'cannonFire',
-        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
-        frameRate: 1,
-        repeat: -1
-    });
-    canon2.anims.play('cannonFire');
-    //proyectil
-    var proyectil2 = this.physics.add.sprite(1060, -3150, "proyectil");
-    // proyectil.setImmovable(true);
-    proyectil2.body.allowGravity = false;
-    proyectil2.setOrigin(.5, .5);
-    proyectil2.setCollideWorldBounds(true);
-    proyectil2.refreshBody();
-    this.tweens.add({
-        targets: proyectil2,
-        x: proyectil2.x - 1300,
-        ease: "Linear",
-        duration: 2500,
-        repeat: -1,
-        delay: 2000,
-    });
-    this.physics.add.collider(player, proyectil2, chocarEnemigo, null, this);
+    crearPinchos.call(this, 530, -3200, true);
+    crearPinchos.call(this, 815, -3200, true);
+    crearCannon.call(this, 1060, -3155, 2500, true);
     createMovingPlatformY.call(this, 950, -3120, 100, -400);
     var plat2=platforms.create(950, -3607, "ground").setScale(0.5).refreshBody();
     plat2.body.checkCollision.down = false;
@@ -343,12 +320,12 @@ escenaJoc.create = function () {
     var columna3 = this.add.rectangle(670, -3690, 95, 400, 0x00ff00);
     this.physics.add.existing(columna3, true);
     this.physics.add.collider(player, columna3);
-    crearPinchos.call(this, 669, -3905);
+    crearPinchos.call(this, 669, -3905, false);
     crearSaltador.call(this, 550, -3690);
     var columna4 = this.add.rectangle(430, -3690, 95, 400, 0x00ff00);
     this.physics.add.existing(columna4, true);
     this.physics.add.collider(player, columna4);
-    crearPinchos.call(this, 429, -3905);
+    crearPinchos.call(this, 429, -3905, false);
     crearSaltador.call(this, 310, -3690);
     platforms.create(100, -3970, "ground").setScale(0.25).refreshBody();
     collapsingPlatforms.create(400, -4110, "fallPlat").setScale(0.5).refreshBody();
@@ -359,109 +336,59 @@ escenaJoc.create = function () {
     var suelo3 = this.add.rectangle(425, -4710, 700, 20, 0x00ff00);
     this.physics.add.existing(suelo3, true);
     this.physics.add.collider(player, suelo3);
-    var canon3=this.add.sprite(1060, -4775, 'cannon').setScale(2.2).setDepth(1);//rever
-    //reverse cannon
-    canon3.setFlipX(true);
-    this.anims.create({ 
-        key: 'cannonFire',
-        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
-        frameRate: 1,
-        repeat: -1
-    });
-    canon3.anims.play('cannonFire');
-    //proyectil
-    var proyectil3 = this.physics.add.sprite(1060, -4770, "proyectil");
-    // proyectil.setImmovable(true);
-    proyectil3.body.allowGravity = false;
-    proyectil3.setOrigin(.5, .5);
-    proyectil3.setCollideWorldBounds(true);
-    proyectil3.refreshBody();
-    this.tweens.add({
-        targets: proyectil3,
-        x: proyectil3.x - 1300,
-        ease: "Linear",
-        duration: 2700,
-        repeat: -1,
-        delay: 1500,
-    });
-    this.physics.add.collider(player, proyectil3, chocarEnemigo, null, this);
+    crearCannon.call(this, 1060, -4775, 2700, true);
     var suelo4 = this.add.rectangle(615, -4825, 820, 20, 0x00ff00);
     this.physics.add.existing(suelo4, true);
     this.physics.add.collider(player, suelo4);
-    var canon4=this.add.sprite(35, -4885, 'cannon').setScale(2.2).setDepth(1);//rever
-    this.anims.create({
-        key: 'cannonFire',
-        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
-        frameRate: 1,
-        repeat: -1
-    });
-    canon4.anims.play('cannonFire');
-    //proyectil
-    var proyectil4 = this.physics.add.sprite(35, -4880, "proyectil");
-    // proyectil.setImmovable(true);
-    proyectil4.body.allowGravity = false;
-    proyectil4.setOrigin(.5, .5);
-    proyectil4.setCollideWorldBounds(true);
-    proyectil4.refreshBody();
-    this.tweens.add({
-        targets: proyectil4,
-        x: proyectil4.x + 1300,
-        ease: "Linear",
-        duration: 2300,
-        repeat: -1,
-        delay: 3300,
-    });
-
-    this.physics.add.collider(player, proyectil4, chocarEnemigo, null, this);
+    crearCannon.call(this, 35, -4885, 2300, false);
     var suelo5 = this.add.rectangle(425, -4940, 700, 20, 0x00ff00);
     this.physics.add.existing(suelo5, true);
     this.physics.add.collider(player, suelo5);
-    var canon5=this.add.sprite(1060, -5005, 'cannon').setScale(2.2).setDepth(1);//rever
-    //reverse cannon
-    canon5.setFlipX(true);
-    this.anims.create({
-        key: 'cannonFire',
-        frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
-        frameRate: 1,
-        repeat: -1
-    });
-    canon5.anims.play('cannonFire');
-    //proyectil
-    var proyectil5 = this.physics.add.sprite(1060, -5000, "proyectil");
-    // proyectil.setImmovable(true);
-    proyectil5.body.allowGravity = false;
-    proyectil5.setOrigin(.5, .5);
-    proyectil5.setCollideWorldBounds(true);
-    proyectil5.refreshBody();
-    this.tweens.add({
-        targets: proyectil5,
-        x: proyectil5.x - 1300,
-        ease: "Linear",
-        duration: 2700,
-        repeat: -1,
-        delay: 1500,
-    });
-    this.physics.add.collider(player, proyectil5, chocarEnemigo, null, this);
+    crearCannon.call(this, 1060, -5005, 2700, true);
     var suelo6 = this.add.rectangle(765, -5055, 520, 20, 0x00ff00);
     this.physics.add.existing(suelo6, true);
     this.physics.add.collider(player, suelo6);
     var suelo7 = this.add.rectangle(195, -5055, 240, 20, 0x00ff00);
     this.physics.add.existing(suelo7, true);
     this.physics.add.collider(player, suelo7);
-    
+    crearPinchos.call(this, 260, -5081, false);
+    crearPinchos.call(this, 125, -5081, false);
+    crearMurcielago.call(this, 605, -5140, 160);
+    crearPinchos.call(this, 880, -5081, false);
+    collapsingPlatforms.create(985, -5190, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(985, -5320, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(985, -5440, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(985, -5560, "fallPlat").setScale(0.5).refreshBody();
+    crearSaltador.call(this, 600, -5560);
+    // platforms.create(100, -5380, "ground").setScale(0.25).refreshBody();
+    createMovingPlatformY.call(this, 125, -5350, 100, -725);
+    var suelo8 = this.add.rectangle(700, -6050, 900, 20, 0x00ff00);
+    this.physics.add.existing(suelo8, true);
+    this.physics.add.collider(player, suelo8);
+    var sueloAbajo9 = this.add.rectangle(165, -6050, 177, 20, 0x00ff00);
+    this.physics.add.existing(sueloAbajo9, true);
+    this.physics.add.collider(player, sueloAbajo9);
+    sueloAbajo9.body.checkCollision.down = false;
+    crearCannon.call(this, 1060, -6100, 6000, true);
+    crearCannon.call(this, 1060, -6225, 3000, true);
+    crearMurcielago.call(this, 230, -6100, 220);
+    crearPinchos.call(this, 550, -6076, false);
+    crearPinchos.call(this, 650, -6076, false);
+    crearMurcielago.call(this, 750, -6100, 200);
+    crearSaltador.call(this, 980, -6150);
+    collapsingPlatforms.create(820, -6370, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(650, -6490, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(480, -6610, "fallPlat").setScale(0.5).refreshBody();
+    collapsingPlatforms.create(250, -6730, "fallPlat").setScale(0.5).refreshBody();
+    crearSaltador.call(this, 120, -6850);
 
-
-
-
-
-
-    // platforms.create(550, -2770, "ground").setScale(0.75).refreshBody();
-    // platforms.create(275, -2980, "ground").setScale(1).refreshBody();
-    // platforms.create(825, -2980, "ground").setScale(1).refreshBody();
-    // //add finish rectangle
-    // var finish = this.add.rectangle(550, -2980, 200, 40, 0x00ff00);
-    // this.physics.add.existing(finish, true);
-    // this.physics.add.overlap(player, finish, ganarJuego, null, this);
+    platforms.create(550, -7050, "ground").setScale(0.75).refreshBody();
+    platforms.create(275, -7280, "ground").setScale(1).refreshBody();
+    platforms.create(825, -7280, "ground").setScale(1).refreshBody();
+    //add finish rectangle
+    var finish = this.add.rectangle(550, -7280, 200, 40, 0x00ff00);
+    this.physics.add.existing(finish, true);
+    this.physics.add.overlap(player, finish, ganarJuego, null, this);
 
 
 
@@ -493,8 +420,8 @@ escenaJoc.create = function () {
     // Position the player on the lowest platform
     // player.x = lowestPlatform.x;
     // player.y = lowestPlatform.y - 80;
-    player.x = 950;
-    player.y = -5060;
+    player.x = 550;
+    player.y = -3160;
 
     heightText = this.add.text(16, 50, "Height: 0", {
         fontSize: "24px",
@@ -519,6 +446,9 @@ escenaJoc.create = function () {
     for (var i = 0; i < murcielagos.length; i++) {
         var murcielago = murcielagos[i];
         this.physics.add.overlap(player, murcielago, chocarEnemigo, null, this);
+        this.physics.add.collider(murcielago, suelo6);
+        this.physics.add.collider(murcielago, suelo7);
+        this.physics.add.collider(murcielago, suelo8);
     };
 
     // this.physics.add.collider(pinchitos, platforms);
@@ -611,7 +541,7 @@ function createMovingPlatformY(x, y, displayWidth, distance) {
         targets: movingPlatform,
         y: movingPlatform.y + distance,
         ease: "Linear",
-        duration: 4000,
+        duration: 5200,
         repeat: -1,
         yoyo: true,
     });
@@ -620,7 +550,7 @@ function createMovingPlatformY(x, y, displayWidth, distance) {
 
 }
 
-function crearCannon(x, y) {
+function crearCannon(x, y, duration, directionRight) {
     var cannon = this.add.sprite(x, y, 'cannon').setScale(2.2).setDepth(1);
     this.anims.create({
         key: 'cannonFire',
@@ -629,25 +559,31 @@ function crearCannon(x, y) {
         repeat: -1
     });
     cannon.anims.play('cannonFire');
-
+    if (directionRight) {
+        cannon.setFlipX(true);
+    }
     //proyectil
     var proyectil = this.physics.add.sprite(x, y + 10, "proyectil");
-    // proyectil.setImmovable(true);
+    proyectil.setScale(0.025);
     proyectil.body.allowGravity = false;
     proyectil.setOrigin(.5, .5);
     proyectil.setCollideWorldBounds(true);
     proyectil.refreshBody();
-    this.tweens.add({
+    var proyectilTweenConfig = {
         targets: proyectil,
-        x: proyectil.x + 1300,
+        y: proyectil.y,
         ease: "Linear",
-        duration: 5000,
-        repeat: -1,
-        delay: 2000,
-    });
+        duration: duration,
+        repeat: -1
+    };
+    if (directionRight) {
+        proyectilTweenConfig.x = proyectil.x - 1300;
+    } else {
+        proyectilTweenConfig.x = proyectil.x + 1300;
+    }
+    this.tweens.add(proyectilTweenConfig);
     canones.push(cannon);
     proyectiles.push(proyectil);
-
 }
 function crearMurcielago(x, y, distancia) {
 
@@ -724,8 +660,11 @@ function playerVulnerable(game) {
     });
 }
 
-function crearPinchos(x, y) {
+function crearPinchos(x, y, arriba) {
     var pinchitos = this.physics.add.sprite(x, y, "pinchos");
+    if (arriba) {
+        pinchitos.setFlipY(true);
+    }
     pinchitos.enableBody = true;
     pinchitos.body.allowGravity = false;
     pinchitos.body.immovable = true;
@@ -1015,7 +954,6 @@ function shakePlatform(player, platform) {
     if (player.body.blocked.down) {
         // temblor de pantalla
         this.cameras.main.shake(100, 0.001);
-
         // Hacer un tween yoyo para hacer temblar la plataforma hacia adelante y hacia atrás y hacia arriba y hacia abajo
         var tween = this.tweens.add({
             targets: platform,
@@ -1037,6 +975,8 @@ function shakePlatform(player, platform) {
             }
         });
     }
+    platform.body.checkCollision.left = false;
+    platform.body.checkCollision.right = false;
 }
 
 function checkOneWay(player, oneway) {
