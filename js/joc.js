@@ -162,13 +162,17 @@ escenaJoc.preload = function () {
     this.load.image("movimientoPlat", "one-way-platform.jpg");
     this.load.image("enemigo", "fire.gif");
     this.load.spritesheet('murcielago', 'bat.png', { frameWidth: 32, frameHeight: 32 });
-    this.load.image("pinchos", "spikes.png");
+    this.load.image("pinchos", "pinchos.png");
     this.load.spritesheet('saltador', 'saltador.png', { frameWidth: 64, frameHeight: 64 });
     this.load.image("proyectil", "proyectil.jpg");
     this.load.image("ground2", "one-way-platform.jpg");
     this.load.spritesheet('cannon', 'canon.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('lava', 'lava.png', { frameWidth: 288, frameHeight: 288, endFrame: 9 });
     this.load.image("columna", "columna.jpg");
+    this.load.image("muro", "muro.png");
+    this.load.image("planaPlat", "planaPlat.png");
+    this.load.image("fallingPlat", "fallingPlat.png");
+    this.load.image("paredPlat", "paredPlat.png");
     this.load.image("fondo", "fondo.png");
     this.load.spritesheet('pj', 'pj.png', { frameWidth: 50, frameHeight: 37 });
     this.load.image("vida", "vida.png");
@@ -204,25 +208,6 @@ escenaJoc.create = function () {
         createLava.call(this);
     }
 
-    player.setCollideWorldBounds(true);
-
-    //vidas
-    player.invulnerable = false;
-    player.vidas = maxVidas;
-
-    sinVida1 = this.add.sprite(980, 38, 'sinvida'),
-        sinVida2 = this.add.sprite(940, 38, 'sinvida'),
-        sinVida3 = this.add.sprite(900, 38, 'sinvida');
-
-
-    vidasOutlines = [sinVida1, sinVida2, sinVida3];
-
-    vida1 = this.add.sprite(980, 38, 'vida');
-    vida2 = this.add.sprite(940, 38, 'vida');
-    vida3 = this.add.sprite(900, 38, 'vida');
-    //and store in an array for easy access later
-    vidas = [vida1, vida2, vida3];
-
     platforms = this.physics.add.staticGroup();
     platform2 = this.physics.add.staticGroup();
     collapsingPlatforms = this.physics.add.staticGroup();
@@ -231,11 +216,8 @@ escenaJoc.create = function () {
 
     // Columnas de derecha e izquierda
     this.load.image('columna', 'columna.jpg');
-
-    // Crear las columnas izquierda y derecha
     var leftColumn = this.add.tileSprite(25, config.height / 2, 100, config.height + 10000, 'columna');
     leftColumn.setOrigin(0.5, 0.5);
-
     var rightColumn = this.add.tileSprite(config.width - 25, config.height / 2, 100, config.height + 10000, 'columna');
     rightColumn.setOrigin(0.5, 0.5);
 
@@ -246,34 +228,29 @@ escenaJoc.create = function () {
 
     this.physics.add.existing(leftColumn, true);
     this.physics.add.existing(rightColumn, true);
-    //hacer la primera plataforma que ocupe el 100% de la pantalla y que sea la que esté más abajo
-    // platforms.create(config.width / 2, config.height, "ground").setScale(3).refreshBody();
-    platform2.create(config.width / 2, 670, "ground2").setScale(3).refreshBody();
-    platform2.create(config.width / 2, 590, "ground2").setScale(2).refreshBody();
 
+    platform2.create(config.width / 2, 670, "muro").setScale(2).refreshBody();
+    platform2.create(config.width / 2, 573, "muro").setScale(1).refreshBody();
 
-    //crear una plataforma en el centro de la pantalla
-    platforms.create(config.width / 2, 420, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 - 320, 300, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 + 320, 300, "ground").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 - 120, 180, "ground").setScale(0.5).refreshBody();
-    // crearEnemigo.call(this, 350, 156, 170);
-    // crearEnemigo.call(this, 300, 500, 170);
-    // crearEnemigo.call(this, 350, 256, 170);
-    platforms.create(config.width / 2 + 120, 60, "ground").setScale(0.5).refreshBody();
-    collapsingPlatforms.create(config.width / 2 - 150, -40, "fallPlat").setScale(0.5).refreshBody();
-    collapsingPlatforms.create(config.width / 2 + 380, -40, "fallPlat").setScale(0.5).refreshBody();
-    platforms.create(config.width / 2 + 120, -180, "ground").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2, 420, "planaPlat").setScale(0.7).refreshBody();
+    platforms.create(config.width / 2 - 320, 300, "planaPlat").setScale(0.8).refreshBody();
+    platforms.create(config.width / 2 + 320, 300, "planaPlat").setScale(1.2).refreshBody();
+    platforms.create(config.width / 2 - 120, 180, "planaPlat").setScale(1).refreshBody();
+
+    platforms.create(config.width / 2 + 120, 60, "planaPlat").setScale(1).refreshBody();
+    collapsingPlatforms.create(config.width / 2 - 150, -65, "fallingPlat").setScale(0.8).refreshBody();
+    collapsingPlatforms.create(config.width / 2 + 380, -65, "fallingPlat").setScale(0.8).refreshBody();
+    platforms.create(config.width / 2 + 120, -180, "planaPlat").setScale(1).refreshBody();
     createMovingPlatformX.call(this, 500, -300, 150, -350);
     createMovingPlatformX.call(this, 600, -425, 150, 350);
-    platforms.create(config.width / 2 - 275, -550, "ground").setScale(0.75).refreshBody();
-    platforms.create(config.width / 2 + 50, -680, "ground").setScale(0.3).refreshBody();
-    platforms.create(config.width / 2 + 335, -810, "ground").setScale(0.3).refreshBody();
-    platforms.create(config.width / 2 + 5, -930, "ground").setScale(0.7).refreshBody();
-    crearPinchos.call(this, 555, -957, false);
-    platforms.create(config.width / 2 + -414, -1080, "ground").setScale(0.3).refreshBody();
-    platforms.create(config.width / 2 + -95, -1210, "ground").setScale(0.6).refreshBody();
-    platforms.create(config.width / 2 + 355, -1210, "ground").setScale(0.6).refreshBody();
+    platforms.create(config.width / 2 - 275, -550, "muro").setScale(0.9).refreshBody();
+    platforms.create(config.width / 2 + 50, -680, "planaPlat").setScale(0.5).refreshBody();
+    platforms.create(config.width / 2 + 335, -810, "planaPlat").setScale(0.8).refreshBody();
+    platforms.create(config.width / 2 + 5, -925, "muro").setScale(1.3).refreshBody();
+    crearPinchos.call(this, 555, -983, false);
+    platforms.create(config.width / 2 + -410, -1075, "paredPlat").setScale(2).refreshBody();
+    platforms.create(config.width / 2 + -95, -1195, "planaPlat").setScale(1.3).refreshBody();
+    platforms.create(config.width / 2 + 352, -1195, "planaPlat").setScale(1.3).refreshBody();
     crearMurcielago.call(this, 360, -1260, 220);
     crearMurcielago.call(this, 800, -1260, 220);
     var square = this.add.tileSprite(config.width / 2 - 125, -1775, 700, 500, 'columna');
@@ -287,13 +264,13 @@ escenaJoc.create = function () {
     crearPinchos.call(this, 425, -2041, false);
     crearPinchos.call(this, 225, -2041, false);
     crearSaltador.call(this, 120, -2140);
-    collapsingPlatforms.create(400, -2280, "fallPlat").setScale(0.5).refreshBody();
-    collapsingPlatforms.create(600, -2400, "fallPlat").setScale(0.5).refreshBody();
-    collapsingPlatforms.create(800, -2520, "fallPlat").setScale(0.5).refreshBody();
-    platforms.create(1000, -2640, "ground").setScale(0.25).refreshBody();
+    collapsingPlatforms.create(400, -2280, "fallingPlat").setScale(0.8).refreshBody();
+    collapsingPlatforms.create(600, -2400, "fallingPlat").setScale(0.8).refreshBody();
+    collapsingPlatforms.create(800, -2520, "fallingPlat").setScale(0.8).refreshBody();
+    platforms.create(978, -2640, "paredPlat").setScale(1.5).refreshBody();
     createMovingPlatformX.call(this, 800, -2770, 150, -150);
     createMovingPlatformX.call(this, 350, -2770, 100, -80);
-    platforms.create(100, -2910, "ground").setScale(0.25).refreshBody();
+    platforms.create(124, -2870, "paredPlat").setScale(1.5).refreshBody();
     // platforms.create(800, -3080, "ground").setScale(1).refreshBody();
     var suelo = this.add.rectangle(625, -3000, 800, 50, 0x00ff00);
     this.physics.add.existing(suelo, true);
@@ -310,8 +287,8 @@ escenaJoc.create = function () {
     var techo = this.add.rectangle(550, -3415, 650, 400, 0x00ff00);
     this.physics.add.existing(techo, true);
     this.physics.add.collider(player, techo);
-    crearPinchos.call(this, 530, -3200, true);
-    crearPinchos.call(this, 815, -3200, true);
+    crearPinchos.call(this, 515, -3200, true);
+    crearPinchos.call(this, 800, -3200, true);
     crearCannon.call(this, 1060, -3155, 2500, true);
     createMovingPlatformY.call(this, 950, -3120, 100, -400);
     var plat2=platforms.create(950, -3607, "ground").setScale(0.5).refreshBody();
@@ -420,14 +397,17 @@ escenaJoc.create = function () {
     // Position the player on the lowest platform
     // player.x = lowestPlatform.x;
     // player.y = lowestPlatform.y - 80;
-    player.x = 550;
-    player.y = -3160;
+    player.x = 900;
+    player.y = -3700;
 
     heightText = this.add.text(16, 50, "Height: 0", {
         fontSize: "24px",
         fill: "#fff"
     });
 
+
+    tiempoInicio=Date.now();
+    tiempoText = this.add.text(15, 100, 'Tiempo: 00:00.00', { fontSize: '16px', fill: '#ffffff' });
 
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player, platform2);
@@ -565,6 +545,9 @@ function crearCannon(x, y, duration, directionRight) {
     //proyectil
     var proyectil = this.physics.add.sprite(x, y + 10, "proyectil");
     proyectil.setScale(0.025);
+    proyectil.setTint(0xFFFF00,0.9);
+    
+    
     proyectil.body.allowGravity = false;
     proyectil.setOrigin(.5, .5);
     proyectil.setCollideWorldBounds(true);
@@ -666,6 +649,7 @@ function crearPinchos(x, y, arriba) {
         pinchitos.setFlipY(true);
     }
     pinchitos.enableBody = true;
+    pinchitos.setScale(2.3);
     pinchitos.body.allowGravity = false;
     pinchitos.body.immovable = true;
     this.physics.add.collider(pinchitos, platforms);
@@ -823,8 +807,14 @@ escenaJoc.update = function () {
 
     this.cameras.main.setBounds(0, -10000, config.width, config.height + 10000);
     this.cameras.main.startFollow(player, true, 0.1, 0.1);
+
+    // ELEMENTOS DE LA INTERFAZ
     heightText.setText("Height: " + Math.round(player.y));//* -1/50
     heightText.setScrollFactor(0);
+    var tiempoActual = Date.now();
+    var tiempoTranscurrido = (tiempoActual - tiempoInicio) / 1000; 
+    tiempoText.setText('Tiempo: ' + tiempoTranscurrido.toFixed(2));
+    tiempoText.setScrollFactor(0);
     sinVida1.setScrollFactor(0).setDepth(20);
     sinVida2.setScrollFactor(0).setDepth(20);
     sinVida3.setScrollFactor(0).setDepth(20);
@@ -832,6 +822,7 @@ escenaJoc.update = function () {
     vida2.setScrollFactor(0).setDepth(20);
     vida3.setScrollFactor(0).setDepth(20);
     wasStanding = standing;
+    
 }
 
 function switchDirection(enemigo) {
@@ -846,7 +837,25 @@ function createPlayer() {
     player.setBounce(0);
     player.body.maxVelocity.x = 340;
     player.body.maxVelocity.y = 1000;
-    // Para ajustar el tamaño del hitbox respecto al sprite
+
+    //vidas
+    player.invulnerable = false;
+    player.vidas = maxVidas;
+
+    sinVida1 = this.add.sprite(980, 38, 'sinvida'),
+        sinVida2 = this.add.sprite(940, 38, 'sinvida'),
+        sinVida3 = this.add.sprite(900, 38, 'sinvida');
+
+
+    vidasOutlines = [sinVida1, sinVida2, sinVida3];
+
+    vida1 = this.add.sprite(980, 38, 'vida');
+    vida2 = this.add.sprite(940, 38, 'vida');
+    vida3 = this.add.sprite(900, 38, 'vida');
+    //Array de vidas
+    vidas = [vida1, vida2, vida3];
+
+    // AJUSTAR HITBOX Y ANIMACION
     player.setSize(16, 28);
     player.setOffset(17, 8);
     this.anims.create({
@@ -953,7 +962,7 @@ function handleJumping(standing) {
 function shakePlatform(player, platform) {
     if (player.body.blocked.down) {
         // temblor de pantalla
-        this.cameras.main.shake(100, 0.001);
+        this.cameras.main.shake(100, 0.003);
         // Hacer un tween yoyo para hacer temblar la plataforma hacia adelante y hacia atrás y hacia arriba y hacia abajo
         var tween = this.tweens.add({
             targets: platform,
