@@ -156,7 +156,7 @@ escenaGanar.create = function () {
     var musica = this.sound.add('ganar');
     musica.play({ loop: true });
   
-    var textoGanar=this.add.text(550, 460, 'HAS GANADO', { fontSize: 32, color: '#ffffff', align: 'center' })
+    var textoGanar=this.add.text(550, 550, 'YOU WON!', { fontSize: 32, color: '#ffffff', align: 'center' })
       .setShadow(4, 4, "#000000", 2, false, true).setOrigin(0.5).setDepth(3);
     
       var tiempoTexto = this.add.text(550, 80, 'Tiempo: ' + tiempoTranscurrido.toFixed(2), { fontSize: 32, color: '#ffffff', align: 'center' })
@@ -227,7 +227,7 @@ escenaGanar.create = function () {
 var escenaPuntuaciones = new Phaser.Scene('escenaPuntuaciones');
 
 escenaPuntuaciones.create = async function(){
-    this.add.text(550, 80, 'PUNTUACIONES', { fontSize: 32, color: '#ffffff', align: 'center' })
+    this.add.text(550, 80, 'SCOREBOARD', { fontSize: 32, color: '#ffffff', align: 'center' })
     .setShadow(4, 4, "#000000", 2, false, true).setOrigin(0.5).setDepth(3);
 
 
@@ -254,7 +254,7 @@ escenaPuntuaciones.create = async function(){
     tabla.style.transform = 'translate(-50%, -50%)';
     tabla.style.display = 'block';
     
-    var textoContinuar=this.add.text(550, 460, 'CLICK TO CONTINUE', { fontSize: 32, color: '#ffffff', align: 'center' })
+    var textoContinuar=this.add.text(550, 629, 'CLICK TO CONTINUE', { fontSize: 32, color: '#ffffff', align: 'center' })
     .setShadow(4, 4, "#000000", 2, false, true).setOrigin(0.5).setDepth(3);
 
     this.tweens.add({
@@ -553,7 +553,7 @@ escenaJoc.create = function () {
     var portal = this.add.sprite(550, -7240, 'portal').setScale(1.5);
     this.anims.create({
         key: 'portal',
-        frames: this.anims.generateFrameNumbers('portal', { start: 0, end: 41 }),
+        frames: this.anims.generateFrameNumbers('portal', { start: 0, end: 40 }),
         frameRate: 20,
         repeat: -1
     });
@@ -604,7 +604,7 @@ escenaJoc.create = function () {
 
 
     tiempoInicio=Date.now();
-    tiempoText = this.add.text(15, 100, 'Tiempo: 00:00.00', { fontSize: '16px', fill: '#ffffff' });
+    tiempoText = this.add.text(15, 100, 'Timer: 00:00.00', { fontSize: '16px', fill: '#ffffff' });
 
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player, platform2);

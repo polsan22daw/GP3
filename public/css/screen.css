@@ -12,3 +12,105 @@ canvas {
     margin-top: 2%;
     background: #162128;  
 }
+
+#input-form-container{
+    font-family: 'pixel';
+    /* FLEX 3 COLUMN */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    /* FLEX 3 COLUMN */
+}
+label{
+    font-family: 'pixel';
+    font-size: 2rem;
+    color: white;
+    /* center on the screen */
+    left: 50%;
+    
+}
+#nickname{
+    width: 88%;
+    padding:5%;
+    margin: auto;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+
+    font-family: 'pixel';
+    font-size: large;
+
+    margin-top: 2em;
+    margin-bottom: 2em;
+
+}
+#nickname:focus{
+    outline: none;
+    border: 1px solid black;
+    box-shadow: 0px 0px 5px black;
+}
+
+button{
+    font-family: 'pixel';
+    font-size: 2rem;
+    color: white;
+    background-color: #162128;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1%;
+    margin: auto;
+    cursor: pointer;
+
+    margin-left: 6%;
+}
+
+button:hover{
+    background-color: #2f3945;
+    border: 1px solid black;
+    box-shadow: 0px 0px 5px black;
+}
+
+table {
+    border-collapse: collapse;
+    white-space: nowrap; 
+    background-color: whitesmoke;
+    border-radius: 4px;
+
+    font-family: 'pixel';
+    font-size: 1.5rem;
+
+    /* center screen */
+    margin: 0 auto;
+    text-align: center;
+
+}
+
+thead {
+    background-color: black;
+    color: white;
+    font-size: 100%;
+    padding: 10%;
+}
+table, th, td {
+    border: 1px solid black;
+}
+.scoreboard-score {
+    font-weight: bold;
+    font-size: 120%;
+}
+td {
+    font-size: 1.2rem;
+    padding: 5%;
+    /* width: 100%; */
+    /* display: flex; */
+    /* justify-content: center; */
+    /* align-items: center; */
+  }
+
+@font-face {
+    font-family: 'pixel';
+    src: url('../css/VCR_OSD_MONO_1.001.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
