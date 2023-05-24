@@ -159,7 +159,7 @@ escenaGanar.create = function () {
     var textoGanar=this.add.text(550, 550, 'YOU WON!', { fontSize: 32, color: '#ffffff', align: 'center' })
       .setShadow(4, 4, "#000000", 2, false, true).setOrigin(0.5).setDepth(3);
     
-      var tiempoTexto = this.add.text(550, 80, 'Tiempo: ' + tiempoTranscurrido.toFixed(2), { fontSize: 32, color: '#ffffff', align: 'center' })
+      var tiempoTexto = this.add.text(550, 80, 'Time ' + tiempoTranscurrido.toFixed(2), { fontSize: 32, color: '#ffffff', align: 'center' })
         .setShadow(4, 4, "#000000", 2, false, true).setOrigin(0.5).setDepth(3);
         this.tweens.add({
             targets: textoGanar,
@@ -545,7 +545,7 @@ escenaJoc.create = function () {
 
     platforms.create(550, -7050, "planaPlat").setScale(0.75).refreshBody();
     //add finish rectangle
-    var finish = this.add.rectangle(540, -7250, 60, 60, 0x00ff00).setVisible(false);
+    var finish = this.add.rectangle(550, -7250, 60, 60, 0x00ff00).setVisible(false);
     this.physics.add.existing(finish, true);
     this.physics.add.overlap(player, finish, ganarJuego, null, this);
     //crear animacion portal con finish
@@ -559,52 +559,30 @@ escenaJoc.create = function () {
     });
     portal.anims.play('portal');
 
-
     var techoFinal = this.add.tileSprite(450, -7500, 1650, 400, 'columna');
     this.physics.add.existing(techoFinal, true);
     this.physics.add.collider(player, techoFinal);
-
-
-
-
-    //barredora
-    // platforms.create(config.width / 2 - 400, -320, "ground").setScale(0.5).refreshBody();
-    // platforms.create(config.width / 2 - 400, -460, "ground").setScale(0.5).refreshBody();
-    // var platBarredora = this.physics.add.sprite(config.width / 2 - 460, -390, "ground").setScale(0.35).setAngle(90);
-    // platBarredora.setSize(platBarredora.height, platBarredora.width, true);
-    // platBarredora.setImmovable(true);
-    // platBarredora.body.allowGravity = false;
-    // platBarredora.refreshBody();
-    // // Configurar la animación de movimiento
-    // this.tweens.add({
-    //     targets: platBarredora,
-    //     x: platBarredora.x + 200,
-    //     esase: 'Linear',
-    //     duration: 4000,
-    //     repeat: -1,
-    //     yoyo: true
-    // });
-
 
     efectoGolpe = this.sound.add('golpeado');
 
     musicaJuego = this.sound.add('musicaJuego');
     musicaJuego.play({ loop: true });
 
-    // Position the player on the lowest platform
-    // player.x = lowestPlatform.x;
-    // player.y = lowestPlatform.y - 80;
+    // player.x = 550;
+    // player.y = 506;
     player.x = 550;
-    player.y = -7180;
+    player.y = 506;
 
-    heightText = this.add.text(16, 50, "Height: 0", {
+    heightText = this.add.text(100, 20, "Height: 0", {
         fontSize: "24px",
-        fill: "#fff"
-    });
+        fill: "#fff",
+        fontFamily: "Arial"
 
+    });
+    heightText.setFixedSize(heightText.width, heightText.height + 10);
 
     tiempoInicio=Date.now();
-    tiempoText = this.add.text(15, 100, 'Timer: 00:00.00', { fontSize: '16px', fill: '#ffffff' });
+    tiempoText = this.add.text(525, 25, 'Timer: 00:00.00', { fontSize: '24px', fill: '#ffffff' , fontFamily: 'Arial'});
 
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(player, platform2);
@@ -614,12 +592,9 @@ escenaJoc.create = function () {
 
     for (var i = 0; i < proyectiles.length; i++) {
         var proyectil = proyectiles[i];
-        this.physics.add.collider(player, proyectil, chocarEnemigo, null, this);
+        this.physics.add.collider(player, proyectil, chocarPinchos, null, this);
     };
 
-
-
-    // this.physics.add.collider(murcielago, platforms);
     for (var i = 0; i < murcielagos.length; i++) {
         var murcielago = murcielagos[i];
         this.physics.add.overlap(player, murcielago, chocarEnemigo, null, this);
@@ -628,25 +603,9 @@ escenaJoc.create = function () {
         this.physics.add.collider(murcielago, suelo8);
     };
 
-    // this.physics.add.collider(pinchitos, platforms);
-    // this.physics.add.overlap(player, pinchitos, chocarPinchos, null, this);
-    // this.physics.add.collider(murcielago, platforms);
-    // this.physics.add.overlap(player, murcielago, chocarEnemigo, null, this);
-
-    // this.physics.add.overlap(player, coins, collectCoin, null, this);
     this.physics.add.collider(player, leftColumn);
     this.physics.add.collider(player, rightColumn);
     this.physics.add.overlap(player, null, this);
-
-    // this.physics.add.collider(player, pinchos, chocarPinchos, null, this);
-
-    // Find the lowest platform
-    var lowestPlatform = platforms.getChildren()[0];
-    platforms.getChildren().forEach(function (platform) {
-        if (platform.y > lowestPlatform.y) {
-            lowestPlatform = platform;
-        }
-    });
 
 }
 function crearSaltador(x, y) {
@@ -983,11 +942,6 @@ escenaJoc.update = function () {
     handlePlayerMovement.call(this, standing);
     handleJumping.call(this, standing);
 
-    // if (Math.abs(enemigo.x - enemigo.previousX) >= enemigo.maxDistance) {
-    //     switchDirection(enemigo);
-    // }
-
-
     //que haga un switchDirection por cada murcielago
 
     for (var i = 0; i < murcielagos.length; i++) {
@@ -997,20 +951,17 @@ escenaJoc.update = function () {
             switchDirection(murcielago);
         }
     }
-    // if (Math.abs(murcielago.x - murcielago.previousX) >= murcielago.maxDistance) {
-    //     switchDirection(murcielago);
-    // }
-
 
     this.cameras.main.setBounds(0, -10000, config.width, config.height + 10000);
     this.cameras.main.startFollow(player, true, 0.1, 0.1);
 
     // ELEMENTOS DE LA INTERFAZ
-    heightText.setText("Height: " + Math.round(player.y));//* -1/50
+    heightText.setText((Math.round(player.y - 506) * -1 / 50).toFixed(1) + " m");
+
     heightText.setScrollFactor(0);
     var tiempoActual = Date.now();
     tiempoTranscurrido = (tiempoActual - tiempoInicio) / 1000; 
-    tiempoText.setText('Tiempo: ' + tiempoTranscurrido.toFixed(2));
+    tiempoText.setText(tiempoTranscurrido.toFixed(2));
     tiempoText.setScrollFactor(0);
     sinVida1.setScrollFactor(0).setDepth(20);
     sinVida2.setScrollFactor(0).setDepth(20);
