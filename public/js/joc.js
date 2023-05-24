@@ -73,7 +73,8 @@ escenaComienzo.create = function () {
     });
 
     this.input.on('pointerdown', function (pointer) {
-        musica.stop();
+        // musica.stop();
+        escenaComienzo.sound.stopAll();
         escenaComienzo.scene.start('escenaJoc');
         escenaJoc.scene.restart();
     });
@@ -153,6 +154,7 @@ escenaGanar.preload = function () {
 };
 
 escenaGanar.create = function () {
+    escenaGanar.sound.stopAll();
     var musica = this.sound.add('ganar');
     musica.play({ loop: true });
   
@@ -272,7 +274,7 @@ escenaPuntuaciones.create = async function(){
         //restart the scene to reset all the variables!
         escenaComienzo.scene.restart();
         tabla.style.display = 'none';
-        musicaFinal.stop();
+        escenaPuntuaciones.sound.stopAll();
 
     });
 }
@@ -400,9 +402,9 @@ escenaJoc.create = function () {
 
     // Columnas de derecha e izquierda
     this.load.image('columna', 'columna.jpg');
-    var leftColumn = this.add.tileSprite(25, config.height / 2, 100, config.height + 10000, 'columna');
+    var leftColumn = this.add.tileSprite(25, config.height / 2, 100, config.height + 10000, 'columna').setDepth(18);
     leftColumn.setOrigin(0.5, 0.5);
-    var rightColumn = this.add.tileSprite(config.width - 25, config.height / 2, 100, config.height + 10000, 'columna');
+    var rightColumn = this.add.tileSprite(config.width - 25, config.height / 2, 100, config.height + 10000, 'columna').setDepth(18);
     rightColumn.setOrigin(0.5, 0.5);
 
     // Ajustar el tamaño de las columnas
@@ -572,6 +574,7 @@ escenaJoc.create = function () {
     // player.y = 506;
     player.x = 550;
     player.y = 506;
+    // player.y = -7110;
 
     heightText = this.add.text(100, 20, "Height: 0", {
         fontSize: "24px",
@@ -687,7 +690,7 @@ function createMovingPlatformY(x, y, displayWidth, distance) {
 }
 
 function crearCannon(x, y, duration, directionRight) {
-    var cannon = this.add.sprite(x, y, 'cannon').setScale(2.2).setDepth(1);
+    var cannon = this.add.sprite(x, y, 'cannon').setScale(2.2).setDepth(21);
     this.anims.create({
         key: 'cannonFire',
         frames: this.anims.generateFrameNumbers('cannon', { start: 0, end: 4 }),
@@ -882,7 +885,7 @@ function jugadorTocado(player, baddie) {
                 ease: 'Linear',
                 duration: 200,
                 onComplete: function () {
-                    musicaJuego.stop();
+                    // musicaJuego.stop();
                     restartGame(this);
                 },
                 onCompleteScope: this
@@ -963,6 +966,7 @@ escenaJoc.update = function () {
     tiempoTranscurrido = (tiempoActual - tiempoInicio) / 1000; 
     tiempoText.setText(tiempoTranscurrido.toFixed(2));
     tiempoText.setScrollFactor(0);
+    tiempoText.setDepth(30);
     sinVida1.setScrollFactor(0).setDepth(20);
     sinVida2.setScrollFactor(0).setDepth(20);
     sinVida3.setScrollFactor(0).setDepth(20);
@@ -1163,7 +1167,8 @@ function destroyGameObject(gameObject) {
     gameObject.destroy();
 }
 function restartGame(scene) {
-    musicaJuego.stop();
+    // musicaJuego.stop();
+    escenaJoc.sound.stopAll();
     escenaJoc.scene.start('escenaFinal');
     // escenaJoc.scene.start('escenaJoc');
 }
@@ -1199,9 +1204,9 @@ function createLava() {
 
 function riseLava() {
     if (iniciarLava) {
-        lava2.height -= lavaSpeed;
+        lava2.height -= lavaSpeed +4.7;
         // lava2.body.height -= lavaSpeed;
-        lava.y -= lavaSpeed;
+        lava.y -= lavaSpeed +4.7;
 
     }
 }
